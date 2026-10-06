@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò chơi tương tác: GIẢI MẬT THƯ - Nitrogen</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #27ae60;
+            --accent-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background-color: #3498db;
+        }
+
+        .btn-danger {
+            background-color: var(--accent-color);
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .option-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-item:hover {
+            background: #e2e6ea;
+            border-color: #bbb;
+        }
+
+        .option-item.selected {
+            background: #d4edda;
+            border-color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .timer-score {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .secret-box {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #856404;
+            margin: 15px 0;
+            letter-spacing: 2px;
+        }
+
+        .feedback {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 18px;
+        }
+        .correct { color: var(--secondary-color); }
+        .incorrect { color: var(--accent-color); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- MÀN HÌNH 1: NHẬP THÔNG TIN -->
+    <div id="screen-start" class="screen active">
+        <h1>🔐 TRÒ CHƠI: GIẢI MẬT THƯ</h1>
+        <p style="text-align: center; color: #666;">Chuyên đề: Vị trí và Trạng thái tự nhiên của Nitrogen</p>
+        
+        <div class="form-group">
+            <label for="input-name">Họ và tên:</label>
+            <input type="text" id="input-name" placeholder="Nhập họ và tên của bạn...">
+        </div>
+        <div class="form-group">
+            <label for="input-group">Tổ nhóm:</label>
+            <input type="text" id="input-group" placeholder="Nhập tổ nhóm...">
+        </div>
+        <div class="form-group">
+            <label for="input-class">Lớp:</label>
+            <input type="text" id="input-class" placeholder="Nhập lớp...">
+        </div>
+
+        <button onclick="startGame()">Bắt đầu giải mật thư</button>
+        <button class="btn-secondary" onclick="showScreen('screen-leaderboard')">Xem Bảng Xếp Hạng</button>
+        <button class="btn-secondary" style="background-color: #8e44ad;" onclick="showScreen('screen-stats')">Xem Tỉ Lệ Trả Lời Đúng/Sai</button>
+    </div>
+
+    <!-- MÀN HÌNH 2: HƯỚNG DẪN -->
+    <div id="screen-instructions" class="screen">
+        <h2>📜 HƯỚNG DẪN TRÒ CHƠI</h2>
+        <ul style="line-height: 1.6;">
+            <li>Trả lời lần lượt <strong>6 câu hỏi</strong> về nguyên tố Nitrogen.</li>
+            <li>Mỗi câu trả lời đúng sẽ mang về cho bạn <strong>1 chữ cái ẩn giấu</strong>. Ghép lại sẽ thành từ khóa bí mật!</li>
+            <li><strong>Quy tắc điểm số:</strong> Câu 1 đến Câu 2 (1 điểm/câu), Câu 3 đến Câu 6 (2 điểm/câu). Tổng điểm tối đa: 10 điểm.</li>
+            <li>Hệ thống chỉ thông báo <strong>Đúng</strong> hoặc <strong>Sai</strong> ngay sau khi chọn, không hiển thị đáp án đúng nếu bạn chọn sai.</li>
+            <li>Thời gian làm bài được tính từ lúc bắt đầu đến câu cuối cùng.</li>
+        </ul>
+        <button onclick="beginQuiz()">Vào thi ngay</button>
+    </div>
+
+    <!-- MÀN HÌNH 3: CÂU HỎI -->
+    <div id="screen-game" class="screen">
+        <div class="timer-score">
+            <span id="question-indicator">Câu 1/6</span>
+            <span id="timer-display">⏱ Thời gian: 0s</span>
+            <span id="score-display">Điểm: 0</span>
+        </div>
+        
+        <h3 id="question-text">Nội dung câu hỏi...</h3>
+        <ul class="options-list" id="options-container">
+            <!-- Render options -->
+        </ul>
+
+        <div id="feedback-msg" class="feedback"></div>
+        <button id="btn-next" style="display:none;" onclick="nextQuestion()">Câu tiếp theo</button>
+    </div>
+
+    <!-- MÀN HÌNH 4: KẾT QUẢ & TỪ KHÓA -->
+    <div id="screen-result" class="screen">
+        <h2>🎉 HOÀN THÀNH GIẢI MẬT THƯ</h2>
+        <div id="result-summary" style="text-align: center; font-size: 18px; margin: 15px 0;"></div>
+        
+        <p style="text-align: center; font-weight: bold;">Từ khóa thu thập được:</p>
+        <div class="secret-box" id="collected-keyword">_ - _ - _ - _ - _ - _</div>
+
+        <button onclick="showScreen('screen-leaderboard')">Xem Bảng Xếp Hạng Tổng Hợp</button>
+        <button class="btn-secondary" onclick="resetToHome()">Về trang chủ</button>
+    </div>
+
+    <!-- MÀN HÌNH 5: BẢNG XẾP HẠNG -->
+    <div id="screen-leaderboard" class="screen">
+        <h2>🏆 BẢNG XẾP HẠNG</h2>
+        <div style="max-height: 250px; overflow-y: auto;">
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Hạng</th>
+                        <th>Họ và tên</th>
+                        <th>Lớp / Tổ</th>
+                        <th>Điểm</th>
+                        <th>Thời gian</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Data populated by JS -->
+                </tbody>
+            </table>
+        </div>
+        <button class="btn-secondary" style="margin-top: 15px;" onclick="resetToHome()">Quay về trang chủ</button>
+        <button class="btn-danger" onclick="clearLeaderboardPrompt()">Xóa Bảng Xếp Hạng</button>
+    </div>
+
+    <!-- MÀN HÌNH 6: THỐNG KÊ ĐÚNG/SAI -->
+    <div id="screen-stats" class="screen">
+        <h2>📊 THỐNG KÊ TỈ LỆ ĐÚNG / SAI MỖI CÂU</h2>
+        <div style="max-height: 250px; overflow-y: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Câu số</th>
+                        <th>Tổng số lượt trả lời</th>
+                        <th>Số lượt đúng</th>
+                        <th>Số lượt sai</th>
+                        <th>Tỉ lệ đúng</th>
+                    </tr>
+                </thead>
+                <tbody id="stats-body">
+                    <!-- Stats populated by JS -->
+                </tbody>
+            </table>
+        </div>
+        <button class="btn-secondary" style="margin-top: 15px;" onclick="resetToHome()">Quay về trang chủ</button>
+    </div>
+</div>
+
+<script>
+    // Dữ liệu 6 câu hỏi chính xác theo yêu cầu
+    const questions = [
+        {
+            id: 1,
+            text: "Trong bảng tuần hoàn các nguyên tố hóa học, nguyên tố nitrogen có số hiệu nguyên tử bằng bao nhiêu?",
+            options: [
+                { letter: "A", text: "6", isCorrect: false },
+                { letter: "Đ", text: "7", isCorrect: true },
+                { letter: "M", text: "8", isCorrect: false },
+                { letter: "N", text: "9", isCorrect: false }
+            ],
+            points: 1,
+            secretLetter: "Đ"
+        },
+        {
+            id: 2,
+            text: "Nguyên tố nitrogen nằm ở vị trí nào trong bảng tuần hoàn các nguyên tố hóa học?",
+            options: [
+                { letter: "A", text: "Chu kì 3, nhóm VA", isCorrect: false },
+                { letter: "Ạ", text: "Chu kì 2, nhóm VA", isCorrect: true },
+                { letter: "M", text: "Chu kì 2, nhóm VIA", isCorrect: false },
+                { letter: "K", text: "Chu kì 3, nhóm IVA", isCorrect: false }
+            ],
+            points: 1,
+            secretLetter: "Ạ"
+        },
+        {
+            id: 3,
+            text: "Cấu hình electron của nguyên tử nitrogen (Z = 7) là gì?",
+            options: [
+                { letter: "N", text: "1s<sup>2</sup>2s<sup>2</sup>2p<sup>1</sup>", isCorrect: false },
+                { letter: "P", text: "1s<sup>2</sup>2s<sup>2</sup>2p<sup>2</sup>", isCorrect: false },
+                { letter: "M", text: "1s<sup>2</sup>2s<sup>2</sup>2p<sup>3</sup>", isCorrect: true },
+                { letter: "Q", text: "1s<sup>2</sup>2s<sup>2</sup>2p<sup>4</sup>", isCorrect: false }
+            ],
+            points: 2,
+            secretLetter: "M"
+        },
+        {
+            id: 4,
+            text: "Trong tự nhiên, phần lớn đơn chất nitrogen tồn tại ở đâu với hàm lượng chiếm khoảng 78% thể tích không khí?",
+            options: [
+                { letter: "H", text: "Trong vỏ Trái Đất dưới dạng mỏ quặng", isCorrect: false },
+                { letter: "K", text: "Ở tầng khí quyển dưới dạng khí tự do (N<sub>2</sub>)", isCorrect: true },
+                { letter: "L", text: "Hòa tan trong nước của các đại dương", isCorrect: false },
+                { letter: "P", text: "Tồn tại trong các mạch nước ngầm sâu", isCorrect: false }
+            ],
+            points: 2,
+            secretLetter: "K"
+        },
+        {
+            id: 5,
+            text: "Ở dạng hợp chất, nguyên tố nitrogen tồn tại chủ yếu trong khoáng vật nào dưới đây (còn được gọi là diêm tiêu Chile)?",
+            options: [
+                { letter: "T", text: "KNO<sub>3</sub>", isCorrect: false },
+                { letter: "H", text: "NaNO<sub>3</sub>", isCorrect: true },
+                { letter: "V", text: "NH<sub>4</sub>Cl", isCorrect: false },
+                { letter: "B", text: "(NH<sub>4</sub>)<sub>2</sub>SO<sub>4</sub>", isCorrect: false }
+            ],
+            points: 2,
+            secretLetter: "H"
+        },
+        {
+            id: 6,
+            text: "Trong cơ thể sinh vật, ngoài việc tồn tại trong một số muối, nguyên tố nitrogen tập trung chủ yếu là thành phần cấu tạo bắt buộc của loại hợp chất hữu cơ quan trọng nào?",
+            options: [
+                { letter: "U", text: "Carbohydrate và lipid", isCorrect: false },
+                { letter: "Í", text: "Protein và nucleic acid (DNA, RNA)", isCorrect: true },
+                { letter: "O", text: "Cellulose và tinh bột đơn giản", isCorrect: false },
+                { letter: "E", text: "Các loại vitamin nhóm B", isCorrect: false }
+            ],
+            points: 2,
+            secretLetter: "Í"
+        }
+    ];
+
+    let currentUser = { name: "", group: "", class: "" };
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let startTime = 0;
+    let elapsedTime = 0;
+    let timerInterval = null;
+    let collectedLetters = [];
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        if(screenId === 'screen-leaderboard') renderLeaderboard();
+        if(screenId === 'screen-stats') renderStats();
+    }
+
+    function startGame() {
+        const name = document.getElementById('input-name').value.trim();
+        const group = document.getElementById('input-group').value.trim();
+        const className = document.getElementById('input-class').value.trim();
+
+        if (!name || !group || !className) {
+            alert("Vui lòng điền đầy đủ Họ và tên, Tổ nhóm và Lớp!");
+            return;
+        }
+
+        currentUser = { name, group, class: className };
+        showScreen('screen-instructions');
+    }
+
+    function beginQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        collectedLetters = [];
+        elapsedTime = 0;
+        showScreen('screen-game');
+        
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('timer-display').innerText = `⏱ Thời gian: ${elapsedTime}s`;
+        }, 1000);
+
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const q = questions[currentQuestionIndex];
+        document.getElementById('question-indicator').innerText = `Câu ${currentQuestionIndex + 1}/6`;
+        document.getElementById('score-display').innerText = `Điểm: ${score}`;
+        document.getElementById('question-text').innerHTML = `Câu ${currentQuestionIndex + 1}: ${q.text}`;
+        
+        document.getElementById('feedback-msg').innerHTML = "";
+        document.getElementById('btn-next').style.display = "none";
+
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = "";
+
+        q.options.forEach((opt, idx) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            li.innerHTML = `<strong>(${opt.letter})</strong> ${opt.text}`;
+            li.onclick = () => selectOption(idx, li);
+            optionsContainer.appendChild(li);
+        });
+    }
+
+    function selectOption(selectedIndex, element) {
+        // Vô hiệu hóa chọn lại
+        const items = document.querySelectorAll('.option-item');
+        items.forEach(item => item.onclick = null);
+
+        const q = questions[currentQuestionIndex];
+        const selectedOpt = q.options[selectedIndex];
+        const feedbackMsg = document.getElementById('feedback-msg');
+
+        // Cập nhật thống kê câu hỏi vào localStorage
+        updateQuestionStats(currentQuestionIndex, selectedOpt.isCorrect);
+
+        if (selectedOpt.isCorrect) {
+            score += q.points;
+            collectedLetters.push(q.secretLetter);
+            feedbackMsg.innerHTML = `<span class="correct">✔ Chính xác! Nhận được chữ cái: ${q.secretLetter}</span>`;
+        } else {
+            feedbackMsg.innerHTML = `<span class="incorrect">✖ Chưa chính xác!</span>`;
+            collectedLetters.push('_');
+        }
+
+        document.getElementById('score-display').innerText = `Điểm: ${score}`;
+        document.getElementById('btn-next').style.display = "block";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            endQuiz();
+        }
+    }
+
+    function endQuiz() {
+        clearInterval(timerInterval);
+        showScreen('screen-result');
+
+        document.getElementById('result-summary').innerHTML = 
+            `Học sinh: <b>${currentUser.name}</b> (Lớp: ${currentUser.class} - Tổ: ${currentUser.group})<br>` +
+            `Tổng điểm: <b>${score}/10</b> | Thời gian: <b>${elapsedTime} giây</b>`;
+
+        document.getElementById('collected-keyword').innerText = collectedLetters.join(' - ');
+
+        // Lưu kết quả vào Leaderboard
+        saveToLeaderboard({
+            name: currentUser.name,
+            info: `${currentUser.class} - Tổ ${currentUser.group}`,
+            score: score,
+            time: elapsedTime
+        });
+    }
+
+    function saveToLeaderboard(record) {
+        let leaderboard = JSON.parse(localStorage.getItem('gmt_leaderboard')) || [];
+        leaderboard.push(record);
+        // Sắp xếp: điểm cao xếp trên, nếu bằng điểm thì thời gian ít hơn (nhanh hơn) xếp trên
+        leaderboard.sort((a, b) => {
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            }
+            return a.time - b.time;
+        });
+        localStorage.setItem('gmt_leaderboard', JSON.stringify(leaderboard));
+    }
+
+    function renderLeaderboard() {
+        const tbody = document.getElementById('leaderboard-body');
+        tbody.innerHTML = "";
+        let leaderboard = JSON.parse(localStorage.getItem('gmt_leaderboard')) || [];
+
+        if (leaderboard.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #777;">Chưa có dữ liệu xếp hạng.</td></tr>`;
+            return;
+        }
+
+        leaderboard.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${index + 1}</b></td>
+                <td>${item.name}</td>
+                <td>${item.info}</td>
+                <td><b>${item.score}</b></td>
+                <td>${item.time}s</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function clearLeaderboardPrompt() {
+        const password = prompt("Nhập mật khẩu để xóa bảng xếp hạng:");
+        if (password === "Giaovien123") {
+            localStorage.removeItem('gmt_leaderboard');
+            renderLeaderboard();
+            alert("Đã xóa bảng xếp hạng thành công!");
+        } else if (password !== null) {
+            alert("Mật khẩu không chính xác!");
+        }
+    }
+
+    function updateQuestionStats(qIndex, isCorrect) {
+        let stats = JSON.parse(localStorage.getItem('gmt_stats')) || {};
+        if (!stats[qIndex]) {
+            stats[qIndex] = { total: 0, correct: 0, incorrect: 0 };
+        }
+        stats[qIndex].total++;
+        if (isCorrect) {
+            stats[qIndex].correct++;
+        } else {
+            stats[qIndex].incorrect++;
+        }
+        localStorage.setItem('gmt_stats', JSON.stringify(stats));
+    }
+
+    function renderStats() {
+        const tbody = document.getElementById('stats-body');
+        tbody.innerHTML = "";
+        let stats = JSON.parse(localStorage.getItem('gmt_stats')) || {};
+
+        for (let i = 0; i < questions.length; i++) {
+            const stat = stats[i] || { total: 0, correct: 0, incorrect: 0 };
+            const percent = stat.total > 0 ? ((stat.correct / stat.total) * 100).toFixed(1) : 0;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>Câu ${i + 1}</b></td>
+                <td>${stat.total}</td>
+                <td style="color: green; font-weight: bold;">${stat.correct}</td>
+                <td style="color: red; font-weight: bold;">${stat.incorrect}</td>
+                <td><b>${percent}%</b></td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function resetToHome() {
+        clearInterval(timerInterval);
+        document.getElementById('input-name').value = "";
+        document.getElementById('input-group').value = "";
+        document.getElementById('input-class').value = "";
+        showScreen('screen-start');
+    }
+</script>
+
+</body>
+</html>
